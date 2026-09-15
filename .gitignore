@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Raw and processed data
+Data/**/*.mat
+Data/**/*.zip
+Data/raw/
+Data/processed/
+
+# Model outputs and experiments
+checkpoints/
+runs/
+logs/
+experiments/*/outputs/
+experiments/*/checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# IDE and system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
