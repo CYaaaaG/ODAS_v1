@@ -45,7 +45,8 @@ def main():
             opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),5.0); opt.step(); b=len(xl); n+=b
             for k,v in zip(['supervised','ucm','graph','cacm'],parts): totals[k]+=float(v.detach())*b
             totals['loss']+=float(loss.detach())*b
-        metrics=evaluate(model,root,cfg,device); row={'epoch':epoch+1,'seconds':time.time()-t0,**{k:v/n for k,v in totals.items()},**metrics}; history.append(row); print(json.dumps(row,ensure_ascii=False)); torch.save({'model':model.state_dict(),'config':cfg,'epoch':epoch+1},out/'last.pt'); json.dump(history,open(out/'history.json','w',encoding='utf-8'),ensure_ascii=False,indent=2)
+        torch.save({'model':model.state_dict(),'config':cfg,'epoch':epoch+1},out/'last.pt')
+        metrics=evaluate(model,root,cfg,device); row={'epoch':epoch+1,'seconds':time.time()-t0,**{k:v/n for k,v in totals.items()},**metrics}; history.append(row); print(json.dumps(row,ensure_ascii=False)); json.dump(history,open(out/'history.json','w',encoding='utf-8'),ensure_ascii=False,indent=2)
     print('saved:',out)
 
 if __name__=='__main__': main()
