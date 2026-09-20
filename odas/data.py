@@ -25,6 +25,17 @@ def read_index(root,split):
                 rel,label=line.rsplit(maxsplit=1); rows.append((root/split/rel.lstrip('/\\'),int(label)))
     return rows
 
+def validate_index(root, splits=('train','test'), limit=20):
+    """Check that every path listed in label.txt exists before training starts."""
+    missing=[]; counts={}
+    for split in splits:
+        rows=read_index(root,split); counts[split]=len(rows)
+        missing.extend((split,str(path),label) for path,label in rows if not path.is_file())
+    if missing:
+        preview='\n'.join(f'  [{split}] {path} (label={label})' for split,path,label in missing[:limit])
+        raise FileNotFoundError(f'Missing {len(missing)} of {sum(counts.values())} indexed .mat files.\n{preview}\n\nCheck data extraction/upload and label.txt before training.')
+    return counts
+
 class CaoDataset(Dataset):
     def __init__(self,root,split='train',indices=None,image_size=32):
         self.rows=read_index(root,split); self.rows=self.rows if indices is None else [self.rows[i] for i in indices]; self.image_size=image_size

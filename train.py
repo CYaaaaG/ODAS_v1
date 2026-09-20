@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from odas.data import load_config, CaoDataset, make_open_world_indices
+from odas.data import load_config, CaoDataset, make_open_world_indices, validate_index
 from odas.augment import transform
 from odas.model import ODASNet
 from odas.memory import MemoryBank
@@ -23,7 +23,7 @@ def evaluate(model, root, cfg, device):
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--config',default='configs/cao_odas.json'); ap.add_argument('--mode',choices=['odas','supervised'],default='odas'); args=ap.parse_args()
-    cfg=load_config(args.config); seed_all(cfg['seed']); device=torch.device('cuda' if cfg.get('device')=='cuda' and torch.cuda.is_available() else 'cpu'); root=Path(cfg['data_root'])
+    cfg=load_config(args.config); seed_all(cfg['seed']); device=torch.device('cuda' if cfg.get('device')=='cuda' and torch.cuda.is_available() else 'cpu'); root=Path(cfg['data_root']); print('data check:',validate_index(root)); print('device:',device)
     li,ui=make_open_world_indices(root,cfg.get('labeled_fraction',.5),tuple(cfg['seen_classes']),cfg['seed'])
     ld=DataLoader(CaoDataset(root,'train',li,cfg['image_size']),cfg['batch_size'],shuffle=True,drop_last=True,num_workers=cfg.get('num_workers',0)); ud=DataLoader(CaoDataset(root,'train',ui,cfg['image_size']),cfg['batch_size']*cfg.get('unlabeled_multiplier',2),shuffle=True,drop_last=True,num_workers=cfg.get('num_workers',0))
     model=ODASNet(cfg['num_classes']).to(device); opt=torch.optim.Adam(model.parameters(),lr=cfg['lr'],weight_decay=cfg.get('weight_decay',0)); bank=MemoryBank(cfg.get('memory_size',1024),cfg['num_classes'],128,cfg.get('memory_temperature',.07)); out=Path(cfg['output_dir']); out.mkdir(parents=True,exist_ok=True); history=[]
